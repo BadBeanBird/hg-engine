@@ -3,7 +3,6 @@ name: build
 on:
   push:
     branches: [main]
-    workflow_dispatch:
     paths-ignore:
       - '**.md'
   pull_request:
@@ -31,14 +30,14 @@ jobs:
           sudo ppa-purge -y ppa:ubuntu-toolchain-r/test || true
           sudo dpkg --add-architecture i386
           sudo mkdir -pm755 /etc/apt/keyrings
-          sudo wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+          sudo wget -O /etc/apt/keyrings/winehq-archive.key https://winehq.org
           sudo add-apt-repository ppa:cybermax-dexter/sdl2-backport
-          sudo wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/$(lsb_release -cs)/winehq-$(lsb_release -cs).sources
+          sudo wget -NP /etc/apt/sources.list.d/ https://winehq.org(lsb_release -cs)/winehq-$(lsb_release -cs).sources
           sudo apt update
           sudo apt -y --allow-downgrades install --install-recommends winehq-stable
 
       - name: Checkout Repo (decomp)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           repository: "BluRosie/pokeheartgold"
 
@@ -60,13 +59,13 @@ jobs:
           mkdir -p $GITHUB_WORKSPACE/sub
           cd ~/download
           if [ ! -d "$GITHUB_WORKSPACE/tools/mwccarm" ]; then
-            wget -q https://github.com/pret/pokeheartgold/raw/workflows/assets/mwccarm.zip
+            wget -q https://github.com
             unzip -q -o mwccarm.zip
             rm -rf $GITHUB_WORKSPACE/tools/mwccarm
             mv mwccarm $GITHUB_WORKSPACE/tools
           fi
           if [ ! -d "$GITHUB_WORKSPACE/tools/bin" ] || [ ! -f "$GITHUB_WORKSPACE/sub/ARM7-TS.lcf.template" ] || [ ! -f "$GITHUB_WORKSPACE/ARM9-TS.lcf.template" ] || [ ! -f "$GITHUB_WORKSPACE/mwldarm.response.template" ]; then
-            wget -q https://github.com/pret/pokeheartgold/raw/workflows/assets/NitroSDK-3_2-060901.7z
+            wget -q https://github.com
             rm -rf NitroSDK-3_2-060901
             7z x -y NitroSDK-3_2-060901.7z >/dev/null
             rm -rf $GITHUB_WORKSPACE/tools/bin
@@ -130,7 +129,7 @@ jobs:
       - name: Move built file (2)
         run: |
           mv ~/download/rom.nds $GITHUB_WORKSPACE/
-          wget https://github.com/BluRosie/hg-engine/raw/workflows/assets/test.sav -P $GITHUB_WORKSPACE/
+          wget https://github.com -P $GITHUB_WORKSPACE/
         working-directory: ~
 
       - name: Set Swap Space
@@ -138,17 +137,16 @@ jobs:
         with:
           swap-size-gb: 19
 
-      - name: Build hg-engine
+      - name: Build hg-engine & Force Xdelta
         run: |
           unset CC
           unset CXX
-          make AUTO_TEST=Y -j$(nproc)
-            
-      - name: Upload Finished Files
+          make AUTO_GENERATE_XDELTA=1 AUTO_TEST=Y -j$(nproc)
+
+      - name: Upload My Custom Patch Files
         uses: actions/upload-artifact@v4
         with:
-          name: my-custom-heartgold
+          name: my-custom-patch
           path: |
-            *.nds
             *.xdelta
             *.patch
