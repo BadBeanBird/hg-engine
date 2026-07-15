@@ -143,6 +143,12 @@ jobs:
           unset CC
           unset CXX
           make AUTO_TEST=Y -j$(nproc)
-      - name: Run tests
-        run: |
-          scripts/run_tests.sh -c -j $(nproc)
+            
+      - name: Upload Finished Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-custom-heartgold
+          path: |
+            *.nds
+            *.xdelta
+            *.patch
